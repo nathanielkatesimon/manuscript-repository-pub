@@ -1,0 +1,11 @@
+manuscript_one:
+  title: Introduction to AI
+  abstract: A study of artificial intelligence fundamentals.
+  file_path: /files/intro_ai.pdf
+  completion_date: 2026-01-15
+  program_or_track: Computer Science
+  research_type: Quantitative
+  authors: John Doe, Jane Smith
+  status: pending
+  student: student_one
+  adviser: adviser_one

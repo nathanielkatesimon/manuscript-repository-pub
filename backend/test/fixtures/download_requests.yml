@@ -1,0 +1,4 @@
+download_request_one:
+  student: student_one
+  manuscript: manuscript_one
+  status: pending

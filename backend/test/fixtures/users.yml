@@ -1,0 +1,21 @@
+student_one:
+  type: Student
+  auth_id: "12345678901"
+  first_name: John
+  middle_name: Michael
+  last_name: Doe
+  email: john.doe@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  role: student
+  program_or_track: Computer Science
+  year_level: "3"
+
+adviser_one:
+  type: Adviser
+  auth_id: "01-2345-678"
+  first_name: Jane
+  last_name: Smith
+  email: jane.smith@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  role: adviser
+  department: Engineering
