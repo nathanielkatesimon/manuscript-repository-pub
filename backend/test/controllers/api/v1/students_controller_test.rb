@@ -31,4 +31,16 @@ class Api::V1::StudentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unauthorized
   end
+
+  test "returns session expired error with expired token" do
+    expired_token = JwtService.encode({ user_id: @student.id, role: @student.role }, exp: 1.hour.ago)
+
+    get api_v1_student_path(@student),
+      headers: { "Authorization" => "Bearer #{expired_token}" },
+      as: :json
+
+    assert_response :unauthorized
+    json = response.parsed_body
+    assert_includes json["errors"], "Session expired"
+  end
 end

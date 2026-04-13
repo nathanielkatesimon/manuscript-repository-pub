@@ -10,6 +10,8 @@ class ApplicationController < ActionController::API
     @current_user = User.find_by(id: payload[:user_id]) if payload
 
     render json: { errors: ["Unauthorized"] }, status: :unauthorized unless @current_user
+  rescue JWT::ExpiredSignature
+    render json: { errors: ["Session expired"] }, status: :unauthorized
   rescue StandardError
     render json: { errors: ["Unauthorized"] }, status: :unauthorized
   end

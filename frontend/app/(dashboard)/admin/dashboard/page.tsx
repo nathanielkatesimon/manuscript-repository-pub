@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import useUserStore from "@/store/userStore";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -131,7 +132,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (!token) return;
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/v1/admins/dashboard`, {
+    apiFetch(`${API_BASE_URL}/api/v1/admins/dashboard`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())

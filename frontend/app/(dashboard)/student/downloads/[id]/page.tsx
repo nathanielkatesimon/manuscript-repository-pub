@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import useUserStore from "@/store/userStore";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -35,7 +36,7 @@ export default function DownloadRequestShowPage({ params }: { params: Promise<{ 
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/students/download_requests/${resolvedId}`, {
+        const res = await apiFetch(`${API_BASE_URL}/api/v1/students/download_requests/${resolvedId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {

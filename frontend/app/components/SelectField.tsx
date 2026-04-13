@@ -8,6 +8,7 @@ interface SelectOption {
 interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   options: SelectOption[];
+  hideLabel?: boolean;
   placeholder?: string;
   required?: boolean;
 }
@@ -19,6 +20,7 @@ export default function SelectField({
   placeholder,
   required,
   value,
+  hideLabel,
   ...props
 }: SelectFieldProps) {
   const fieldId = id ?? label.toLowerCase().replace(/\s+/g, "-");
@@ -26,14 +28,16 @@ export default function SelectField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={fieldId} className="text-sm font-medium text-gray-900">
-        {label}
-        {required && <span className="text-red-600">*</span>}
-      </label>
+      {!hideLabel && (
+        <label htmlFor={fieldId} className="text-sm font-medium text-gray-900">
+          {label}
+          {required && <span className="text-red-600">*</span>}
+        </label>
+      )}
       <div className="relative">
         <select
           id={fieldId}
-          className="w-full appearance-none rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors cursor-pointer"
+          className="w-full appearance-none rounded-md border border-gray-200 bg-gray-50 pl-4 pr-10 py-2.5 text-sm text-gray-500 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors cursor-pointer truncate"
           {...(isControlled ? { value } : { defaultValue: "" })}
           {...props}
         >

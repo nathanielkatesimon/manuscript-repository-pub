@@ -3,10 +3,19 @@
 import { useEffect, useState, useCallback } from "react";
 import useUserStore from "@/store/userStore";
 import ManuscriptCard, { type Manuscript } from "@/app/components/ManuscriptCard";
+import SelectField from "@/app/components/SelectField";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
 const PER_PAGE = 20;
+
+const SORT_OPTIONS = [
+  { value: "created_at desc", label: "Newest First" },
+  { value: "created_at asc", label: "Oldest First" },
+  { value: "title asc", label: "Title (A–Z)" },
+  { value: "title desc", label: "Title (Z–A)" },
+];
 
 interface Meta {
   current_page: number;
@@ -103,6 +112,7 @@ export default function AdviserManuscriptList({ status, title, description }: Pr
   });
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sortBy, setSortBy] = useState("created_at desc");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,12 +135,13 @@ export default function AdviserManuscriptList({ status, title, description }: Pr
         per_page: String(PER_PAGE),
         "q[adviser_id_eq]": String(user.id),
         "q[status_eq]": status,
+        "q[s]": sortBy,
       });
       if (debouncedSearch.trim()) {
         params.set("q[title_or_authors_or_research_type_cont]", debouncedSearch.trim());
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -147,7 +158,7 @@ export default function AdviserManuscriptList({ status, title, description }: Pr
     } finally {
       setLoading(false);
     }
-  }, [token, user, page, debouncedSearch, status]);
+  }, [token, user, page, debouncedSearch, status, sortBy]);
 
   useEffect(() => {
     fetchManuscripts();
@@ -189,6 +200,14 @@ export default function AdviserManuscriptList({ status, title, description }: Pr
               className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
             />
           </div>
+
+          <SelectField
+            label="Sort by"
+            hideLabel
+            options={SORT_OPTIONS}
+            value={sortBy}
+            onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
+          />
 
           {!loading && (
             <p className="text-sm text-gray-400">

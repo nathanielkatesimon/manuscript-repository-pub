@@ -30,6 +30,18 @@ class Api::V1::Admins::ProfilesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  test "returns session expired error with expired token" do
+    expired_token = JwtService.encode({ user_id: @admin.id, role: @admin.role }, exp: 1.hour.ago)
+
+    get api_v1_admins_profile_path,
+      headers: { "Authorization" => "Bearer #{expired_token}" },
+      as: :json
+
+    assert_response :unauthorized
+    json = response.parsed_body
+    assert_includes json["errors"], "Session expired"
+  end
+
   test "updates profile info" do
     patch api_v1_admins_profile_path,
       params: {

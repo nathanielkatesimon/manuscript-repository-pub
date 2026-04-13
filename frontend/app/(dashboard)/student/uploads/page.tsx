@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import useUserStore from "@/store/userStore";
 import ManuscriptCard, { type Manuscript } from "@/app/components/ManuscriptCard";
+import { apiFetch } from "@/lib/apiFetch";
+import SelectField from "@/app/components/SelectField";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -83,12 +85,21 @@ function Pagination({
   );
 }
 
+const STATUS_OPTIONS = [
+  { value: "", label: "All Statuses" },
+  { value: "pending", label: "Pending" },
+  { value: "approve", label: "Approved" },
+  { value: "revision", label: "For Revision" },
+  { value: "rejected", label: "Rejected" },
+];
+
 export default function UploadsPage() {
   const { user, token } = useUserStore();
   const [manuscripts, setManuscripts] = useState<Manuscript[]>([]);
   const [meta, setMeta] = useState<Meta>({ current_page: 1, total_pages: 1, total_count: 0, per_page: PER_PAGE });
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +112,11 @@ export default function UploadsPage() {
     }, 400);
     return () => clearTimeout(timer);
   }, [search]);
+
+  // Reset page when status filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
 
   const fetchManuscripts = useCallback(async () => {
     if (!token || !user) return;
@@ -115,8 +131,11 @@ export default function UploadsPage() {
       if (debouncedSearch.trim()) {
         params.set("q[title_or_authors_or_research_type_cont]", debouncedSearch.trim());
       }
+      if (statusFilter) {
+        params.set("q[status_eq]", statusFilter);
+      }
 
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -133,7 +152,7 @@ export default function UploadsPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, user, page, debouncedSearch]);
+  }, [token, user, page, debouncedSearch, statusFilter]);
 
   useEffect(() => {
     fetchManuscripts();
@@ -149,7 +168,7 @@ export default function UploadsPage() {
         </p>
       </div>
 
-      {/* Search bar */}
+      {/* Search bar and filters */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-md">
@@ -177,6 +196,15 @@ export default function UploadsPage() {
               className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
             />
           </div>
+
+          <SelectField
+            label="Status"
+            hideLabel={true}
+            options={STATUS_OPTIONS}
+            value={statusFilter}
+            className="w-full appearance-none rounded-md border border-gray-200 bg-gray-50 px-4 pe-8 py-2.5 text-sm text-gray-500 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors cursor-pointer"
+            onChange={(e) => setStatusFilter(e.target.value)}
+          />
 
           {!loading && (
             <p className="text-sm text-gray-400">

@@ -9,6 +9,7 @@ import { swal } from "@/lib/swal";
 import useUserStore from "@/store/userStore";
 import { StudentUser } from "@/store/userStore";
 import { ALL_COURSES, ALL_YEAR_LEVELS } from "@/lib/yearLevelCourseData";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -47,7 +48,7 @@ export default function StudentProfilePage() {
     try {
       const formData = new FormData();
       formData.append("student[avatar]", pendingAvatarBlob, "avatar.jpg");
-      const res = await fetch(`${API_BASE_URL}/api/v1/students/profile`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/students/profile`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -72,7 +73,7 @@ export default function StudentProfilePage() {
     e.preventDefault();
     setIsSavingInfo(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/students/profile`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/students/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -115,7 +116,7 @@ export default function StudentProfilePage() {
     }
     setIsSavingPassword(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/students/profile`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/students/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import useUserStore from "@/store/userStore";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -61,7 +62,7 @@ export default function AdminManuscriptsPage() {
       if (search.trim()) params.set("q[title_cont]", search.trim());
       if (statusFilter) params.set("q[status_eq]", statusFilter);
 
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/manuscripts?${params}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/manuscripts?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

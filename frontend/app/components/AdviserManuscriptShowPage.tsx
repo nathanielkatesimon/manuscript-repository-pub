@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import useUserStore from "@/store/userStore";
 import { swal } from "@/lib/swal";
+import SelectField from "@/app/components/SelectField";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -120,7 +122,7 @@ export default function AdviserManuscriptShowPage({ id }: { id: string }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts/${id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -141,7 +143,7 @@ export default function AdviserManuscriptShowPage({ id }: { id: string }) {
   const fetchFeedbacks = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts/${id}/feedbacks`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts/${id}/feedbacks`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return;
@@ -164,7 +166,7 @@ export default function AdviserManuscriptShowPage({ id }: { id: string }) {
     if (!token || !selectedStatus) return;
     setStatusLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts/${id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +197,7 @@ export default function AdviserManuscriptShowPage({ id }: { id: string }) {
     if (!token) return;
     setFeedbackLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts/${id}/feedbacks`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts/${id}/feedbacks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -437,17 +439,13 @@ export default function AdviserManuscriptShowPage({ id }: { id: string }) {
       <div className="border-t-1 bg-white border-gray-200 px-8 py-6">
         <h2 className="mb-4 text-lg font-bold text-gray-900">Set Status</h2>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <select
+          <SelectField
+            label="Status"
+            hideLabel
+            options={STATUS_OPTIONS}
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="rounded-md border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-900 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          />
           <button
             type="button"
             onClick={handleStatusUpdate}

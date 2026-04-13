@@ -5,6 +5,7 @@ import Link from "next/link";
 import useUserStore from "@/store/userStore";
 import { swal } from "@/lib/swal";
 import TextAreaField from "@/app/components/TextAreaField";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -44,7 +45,7 @@ export default function DownloadRequestsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/download_requests`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/download_requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -67,7 +68,7 @@ export default function DownloadRequestsPage() {
   async function handleApprove(id: number) {
     setActionId(id);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/download_requests/${id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/download_requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ download_request: { status: "approved" } }),
@@ -103,7 +104,7 @@ export default function DownloadRequestsPage() {
     setRejectSubmitting(true);
     setActionId(id);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/download_requests/${id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/download_requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ download_request: { status: "rejected", rejection_reason: rejectionReason } }),

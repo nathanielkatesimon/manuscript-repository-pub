@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import useUserStore from "@/store/userStore";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -62,10 +63,10 @@ export default function AdminAdviserShowPage() {
     setError(null);
     try {
       const [adviserRes, manuscriptsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/v1/advisers/${id}`, {
+        apiFetch(`${API_BASE_URL}/api/v1/advisers/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE_URL}/api/v1/admins/manuscripts?q[adviser_id_eq]=${id}&per_page=100`, {
+        apiFetch(`${API_BASE_URL}/api/v1/admins/manuscripts?q[adviser_id_eq]=${id}&per_page=100`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);

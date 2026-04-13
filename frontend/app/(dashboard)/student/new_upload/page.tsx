@@ -6,6 +6,7 @@ import SelectField from "@/app/components/SelectField";
 import TextAreaField from "@/app/components/TextAreaField";
 import { swal } from "@/lib/swal";
 import useUserStore from "@/store/userStore";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -181,7 +182,7 @@ function StepMetadata({
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_BASE_URL}/api/v1/advisers`, {
+    apiFetch(`${API_BASE_URL}/api/v1/advisers`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -248,7 +249,7 @@ function StepMetadata({
       formData.append("manuscript[status]", "pending");
       formData.append("manuscript[pdf]", file);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/manuscripts`, {
+      const response = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

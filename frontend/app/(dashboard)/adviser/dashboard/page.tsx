@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import useUserStore from "@/store/userStore";
 import ManuscriptCard, { type Manuscript } from "@/app/components/ManuscriptCard";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -146,7 +147,7 @@ export default function AdviserDashboardPage() {
         const statuses = ["pending", "revision", "approve", "rejected"] as const;
         const results = await Promise.all(
           statuses.map((status) =>
-            fetch(
+            apiFetch(
               `${API_BASE_URL}/api/v1/manuscripts?q[adviser_id_eq]=${user.id}&q[status_eq]=${status}&per_page=1&page=1`,
               { headers: { Authorization: `Bearer ${token}` } }
             ).then((r) => r.json())
@@ -179,7 +180,7 @@ export default function AdviserDashboardPage() {
         "q[status_eq]": "approve",
       });
 
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -8,6 +8,7 @@ import InputField from "@/app/components/InputField";
 import SelectField from "@/app/components/SelectField";
 import PasswordField from "@/app/components/PasswordField";
 import { ALL_COURSES, ALL_YEAR_LEVELS } from "@/lib/yearLevelCourseData";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 const PROGRAM_OPTIONS = ALL_COURSES.map((c) => ({ value: c.label, label: c.label }));
@@ -42,6 +43,7 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Student | null>(null);
@@ -53,7 +55,7 @@ export default function StudentsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/students`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/students`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -103,7 +105,7 @@ export default function StudentsPage() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/students/${student.id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/students/${student.id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -142,7 +144,7 @@ export default function StudentsPage() {
     }
 
     try {
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ student: body }),
@@ -170,6 +172,13 @@ export default function StudentsPage() {
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
   }
 
+  const filteredStudents = students.filter((s) => {
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    const fullName = [s.first_name, s.middle_name, s.last_name].filter(Boolean).join(" ").toLowerCase();
+    return fullName.includes(q) || s.auth_id.toLowerCase().includes(q);
+  });
+
   return (
     <div className="flex flex-col gap-6 px-8 py-8">
       <div className="flex items-center justify-between">
@@ -185,13 +194,47 @@ export default function StudentsPage() {
         </button>
       </div>
 
+      {/* Search bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-md">
+          <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or Auth ID…"
+            className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
+          />
+        </div>
+        {!loading && (
+          <p className="text-sm text-gray-400">
+            {filteredStudents.length} {filteredStudents.length === 1 ? "result" : "results"}
+          </p>
+        )}
+      </div>
+
       {loading && <p className="text-sm text-gray-400">Loading…</p>}
       {!loading && error && <p className="text-sm text-red-500">{error}</p>}
-      {!loading && !error && students.length === 0 && (
+      {!loading && !error && filteredStudents.length === 0 && (
         <p className="text-sm text-gray-400 py-20 text-center">No students found.</p>
       )}
 
-      {!loading && !error && students.length > 0 && (
+      {!loading && !error && filteredStudents.length > 0 && (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="min-w-full text-sm">
             <thead className="border-b border-gray-200 bg-gray-50">
@@ -205,7 +248,7 @@ export default function StudentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {students.map((s) => (
+              {filteredStudents.map((s) => (
                 <tr key={s.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-700">{s.auth_id}</td>
                   <td className="px-4 py-3 text-gray-700">

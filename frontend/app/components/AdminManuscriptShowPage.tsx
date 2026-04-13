@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useUserStore from "@/store/userStore";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -113,7 +114,7 @@ export default function AdminManuscriptShowPage({ id }: { id: string }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/manuscripts/${id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/manuscripts/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -133,7 +134,7 @@ export default function AdminManuscriptShowPage({ id }: { id: string }) {
   const fetchFeedbacks = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts/${id}/feedbacks`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts/${id}/feedbacks`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return;

@@ -6,6 +6,7 @@ import Link from "next/link";
 import useUserStore from "@/store/userStore";
 import ManuscriptCard, { type Manuscript } from "@/app/components/ManuscriptCard";
 import { PROGRAM_TO_CATEGORY } from "../page";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -124,7 +125,7 @@ export default function CategoryProgramPage() {
         params.set("q[title_or_authors_or_research_type_cont]", debouncedSearch.trim());
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

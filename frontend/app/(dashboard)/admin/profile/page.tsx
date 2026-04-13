@@ -6,6 +6,7 @@ import InputField from "@/app/components/InputField";
 import PasswordField from "@/app/components/PasswordField";
 import { swal } from "@/lib/swal";
 import useUserStore from "@/store/userStore";
+import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -38,7 +39,7 @@ export default function AdminProfilePage() {
     try {
       const formData = new FormData();
       formData.append("admin[avatar]", pendingAvatarBlob, "avatar.jpg");
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/profile`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/profile`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -63,7 +64,7 @@ export default function AdminProfilePage() {
     e.preventDefault();
     setIsSavingInfo(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/profile`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +105,7 @@ export default function AdminProfilePage() {
     }
     setIsSavingPassword(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/admins/profile`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

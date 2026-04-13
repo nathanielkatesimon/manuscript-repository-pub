@@ -9,6 +9,8 @@ module JwtService
   def self.decode(token)
     decoded = JWT.decode(token, SECRET_KEY).first
     HashWithIndifferentAccess.new(decoded)
+  rescue JWT::ExpiredSignature
+    raise
   rescue JWT::DecodeError
     nil
   end
