@@ -64,12 +64,21 @@ class Api::V1::Admins::ManuscriptsControllerTest < ActionDispatch::IntegrationTe
 
   # SHOW
   test "returns a specific manuscript for admin" do
+    ManuscriptAuditLog.create!(
+      manuscript: @manuscript,
+      editor: @admin,
+      field_changes: { "status" => ["pending", "approve"] }
+    )
+
     get api_v1_admins_manuscript_path(@manuscript), headers: @auth_headers, as: :json
 
     assert_response :ok
     json = response.parsed_body
     assert_equal @manuscript.id, json.dig("data", "id")
     assert_equal @manuscript.title, json.dig("data", "title")
+    assert_equal @admin.id, json.dig("data", "audit_logs", 0, "editor_id")
+    assert_equal @admin.role, json.dig("data", "audit_logs", 0, "editor_role")
+    assert_equal "approve", json.dig("data", "audit_logs", 0, "field_changes", "status", 1)
   end
 
   test "returns not found for non-existent manuscript" do

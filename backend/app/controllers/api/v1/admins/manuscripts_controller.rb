@@ -19,7 +19,12 @@ class Api::V1::Admins::ManuscriptsController < ApplicationController
   end
 
   def show
-    render json: { data: Api::V1::ManuscriptSerializer.new(@manuscript).as_json }, status: :ok
+    data = Api::V1::ManuscriptSerializer.new(@manuscript).as_json
+    data[:audit_logs] = @manuscript.audit_logs.includes(:editor).order(created_at: :desc).map do |audit_log|
+      Api::V1::ManuscriptAuditLogSerializer.new(audit_log).as_json
+    end
+
+    render json: { data: data }, status: :ok
   end
 
   private

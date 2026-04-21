@@ -4,9 +4,20 @@ class Api::V1::ManuscriptsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @student = users(:student_one)
     @adviser = users(:adviser_one)
+    @admin = Admin.create!(
+      auth_id: "admin_audit_1",
+      first_name: "Audit",
+      last_name: "Admin",
+      email: "audit.admin@example.com",
+      password: "password123"
+    )
     @manuscript = manuscripts(:manuscript_one)
     @token = JwtService.encode({ user_id: @student.id, role: @student.role })
+    @adviser_token = JwtService.encode({ user_id: @adviser.id, role: @adviser.role })
+    @admin_token = JwtService.encode({ user_id: @admin.id, role: @admin.role })
     @auth_headers = { "Authorization" => "Bearer #{@token}" }
+    @adviser_auth_headers = { "Authorization" => "Bearer #{@adviser_token}" }
+    @admin_auth_headers = { "Authorization" => "Bearer #{@admin_token}" }
   end
 
   # INDEX
@@ -101,18 +112,20 @@ class Api::V1::ManuscriptsControllerTest < ActionDispatch::IntegrationTest
   test "creates a manuscript with valid params and PDF" do
     pdf_file = fixture_file_upload("sample.pdf", "application/pdf")
 
-    post api_v1_manuscripts_path,
-      params: {
-        manuscript: {
-          title: "New Research Paper",
-          abstract: "An abstract.",
-          status: "pending",
-          student_id: @student.id,
-          adviser_id: @adviser.id,
-          pdf: pdf_file
-        }
-      },
-      headers: @auth_headers
+    assert_difference(["Manuscript.count", "Notification.count"], 1) do
+      post api_v1_manuscripts_path,
+        params: {
+          manuscript: {
+            title: "New Research Paper",
+            abstract: "An abstract.",
+            status: "pending",
+            student_id: @student.id,
+            adviser_id: @adviser.id,
+            pdf: pdf_file
+          }
+        },
+        headers: @auth_headers
+    end
 
     assert_response :created
     json = response.parsed_body
@@ -120,6 +133,10 @@ class Api::V1::ManuscriptsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "pending", json.dig("data", "status")
     assert json.dig("data", "pdf_url").present?
     assert json.dig("data", "cover_img_url").present?
+
+    notification = Notification.order(:created_at).last
+    assert_equal @adviser.id, notification.user_id
+    assert_equal "new_manuscript_upload", notification.notification_type
   end
 
   test "returns errors when creating without a PDF" do
@@ -186,6 +203,52 @@ class Api::V1::ManuscriptsControllerTest < ActionDispatch::IntegrationTest
     json = response.parsed_body
     assert_equal "Updated Title", json.dig("data", "title")
     assert_equal "approve", json.dig("data", "status")
+  end
+
+  test "creates an audit log when a student edits a manuscript" do
+    assert_difference("ManuscriptAuditLog.count", 1) do
+      patch api_v1_manuscript_path(@manuscript),
+        params: { manuscript: { title: "Student Edited Title" } },
+        headers: @auth_headers,
+        as: :json
+    end
+
+    assert_response :ok
+    audit_log = ManuscriptAuditLog.order(:created_at).last
+    assert_equal @student.id, audit_log.editor_id
+    assert_equal "Student Edited Title", audit_log.field_changes["title"][1]
+  end
+
+  test "creates an audit log when an adviser edits a manuscript" do
+    assert_difference(["ManuscriptAuditLog.count", "Notification.count"], 1) do
+      patch api_v1_manuscript_path(@manuscript),
+        params: { manuscript: { status: "revision" } },
+        headers: @adviser_auth_headers,
+        as: :json
+    end
+
+    assert_response :ok
+    audit_log = ManuscriptAuditLog.order(:created_at).last
+    assert_equal @adviser.id, audit_log.editor_id
+    assert_equal "revision", audit_log.field_changes["status"][1]
+
+    notification = Notification.order(:created_at).last
+    assert_equal @student.id, notification.user_id
+    assert_equal "manuscript_status_update", notification.notification_type
+  end
+
+  test "creates an audit log when an admin edits a manuscript" do
+    assert_difference("ManuscriptAuditLog.count", 1) do
+      patch api_v1_manuscript_path(@manuscript),
+        params: { manuscript: { program_or_track: "Engineering" } },
+        headers: @admin_auth_headers,
+        as: :json
+    end
+
+    assert_response :ok
+    audit_log = ManuscriptAuditLog.order(:created_at).last
+    assert_equal @admin.id, audit_log.editor_id
+    assert_equal "Engineering", audit_log.field_changes["program_or_track"][1]
   end
 
   test "returns errors when updating with invalid params" do

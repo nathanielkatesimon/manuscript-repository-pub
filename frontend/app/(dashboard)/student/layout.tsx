@@ -1,6 +1,5 @@
 import RouteGuard from "@/app/components/RouteGuard";
 import Sidebar from "@/app/components/Sidebar";
-import Topbar from "@/app/components/Topbar";
 
 const navItems = [
   { label: "Repository", href: "/student/repository" },
@@ -17,11 +16,10 @@ export default function StudentLayout({
 }) {
   return (
     <RouteGuard allowedRole="student">
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-white">
         <Sidebar navItems={navItems} />
         <div className="flex flex-1 flex-col pl-60">
-          <Topbar />
-          <main className="flex-1 bg-white">{children}</main>
+          {children}
         </div>
       </div>
     </RouteGuard>

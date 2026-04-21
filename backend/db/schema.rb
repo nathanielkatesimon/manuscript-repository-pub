@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_09_114035) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_20_142000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_09_114035) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "categories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", limit: 512, null: false
+    t.string "title", limit: 512, null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_categories_on_name", unique: true
+  end
+
   create_table "download_requests", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "manuscript_id", null: false
@@ -63,6 +71,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_09_114035) do
     t.index ["user_id"], name: "index_feedbacks_on_user_id"
   end
 
+  create_table "manuscript_audit_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "editor_id", null: false
+    t.jsonb "field_changes", default: {}, null: false
+    t.bigint "manuscript_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["editor_id"], name: "index_manuscript_audit_logs_on_editor_id"
+    t.index ["manuscript_id"], name: "index_manuscript_audit_logs_on_manuscript_id"
+  end
+
   create_table "manuscripts", force: :cascade do |t|
     t.text "abstract"
     t.bigint "adviser_id", null: false
@@ -78,6 +96,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_09_114035) do
     t.datetime "updated_at", null: false
     t.index ["adviser_id"], name: "index_manuscripts_on_adviser_id"
     t.index ["student_id"], name: "index_manuscripts_on_student_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "message", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.string "notification_type", null: false
+    t.datetime "read_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -104,6 +134,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_09_114035) do
   add_foreign_key "download_requests", "users", column: "student_id"
   add_foreign_key "feedbacks", "manuscripts"
   add_foreign_key "feedbacks", "users"
+  add_foreign_key "manuscript_audit_logs", "manuscripts"
+  add_foreign_key "manuscript_audit_logs", "users", column: "editor_id"
   add_foreign_key "manuscripts", "users", column: "adviser_id"
   add_foreign_key "manuscripts", "users", column: "student_id"
+  add_foreign_key "notifications", "users"
 end

@@ -36,7 +36,7 @@ class Api::V1::FeedbacksControllerTest < ActionDispatch::IntegrationTest
 
   # CREATE
   test "creates a feedback with valid params" do
-    assert_difference("Feedback.count", 1) do
+    assert_difference(["Feedback.count", "Notification.count"], 1) do
       post api_v1_manuscript_feedbacks_path(@manuscript),
         params: { feedback: { content: "Great work on the introduction." } },
         headers: @auth_headers,
@@ -48,6 +48,10 @@ class Api::V1::FeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Great work on the introduction.", json.dig("data", "content")
     assert_equal @adviser.id, json.dig("data", "user_id")
     assert_equal @manuscript.id, json.dig("data", "manuscript_id")
+
+    notification = Notification.order(:created_at).last
+    assert_equal @manuscript.student_id, notification.user_id
+    assert_equal "manuscript_feedback", notification.notification_type
   end
 
   test "returns errors when creating feedback without content" do

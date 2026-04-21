@@ -54,7 +54,7 @@ export default function ManuscriptCard({
     <div className="flex flex-col gap-2">
       {/* Cover image — fixed 169×232, centred in card */}
       <div
-        className="relative overflow-hidden rounded-lg bg-gray-100 border border-gray-200 mx-auto"
+        className="relative overflow-hidden rounded-lg bg-gray-100 shadow mx-auto"
         style={{ width: 169, height: 232 }}
       >
         {coverSrc ? (
@@ -101,7 +101,7 @@ export default function ManuscriptCard({
 
   if (href) {
     return (
-      <Link href={href} className="block hover:opacity-90 transition-opacity">
+      <Link href={href} className="block hover:scale-105 transition-transform">
         {card}
       </Link>
     );

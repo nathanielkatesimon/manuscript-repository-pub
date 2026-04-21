@@ -1,0 +1,11 @@
+bachelor_cs:
+  title: Bachelor Degrees
+  name: BS Computer Science
+
+bachelor_it:
+  title: Bachelor Degrees
+  name: BS Information Technology
+
+academic_stem:
+  title: Senior High School — Academic Track
+  name: STEM (Science, Technology, Engineering, and Mathematics)

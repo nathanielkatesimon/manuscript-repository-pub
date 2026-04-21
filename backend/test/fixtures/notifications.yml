@@ -1,0 +1,8 @@
+notification_one:
+  user: student_one
+  notification_type: manuscript_feedback
+  message: Your manuscript "Introduction to AI" received new feedback.
+  metadata:
+    manuscript_id: 1
+    feedback_id: 1
+  read_at:

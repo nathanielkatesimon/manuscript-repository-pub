@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import useUserStore from "@/store/userStore";
 import { apiFetch } from "@/lib/apiFetch";
+import React from "react";
+import StudentTopbar from "@/app/components/student/StudentTopbar";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -94,11 +96,11 @@ export default function DownloadRequestShowPage({ params }: { params: Promise<{ 
   const isApproved = request.status === "approved";
   const isRejected = request.status === "rejected";
 
-  return (
+  return <React.Fragment>
+    <StudentTopbar title="My Downloads" />
     <div className="flex flex-col gap-8 px-8 py-8 max-w-2xl">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Download Request</h1>
         <p className="mt-1 text-sm text-gray-500">Review the status of your manuscript download request.</p>
       </div>
 
@@ -193,5 +195,5 @@ export default function DownloadRequestShowPage({ params }: { params: Promise<{ 
         </div>
       )}
     </div>
-  );
+  </React.Fragment>
 }

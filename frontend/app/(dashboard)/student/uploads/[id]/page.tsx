@@ -6,5 +6,5 @@ export default async function UploadsManuscriptShowPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <ManuscriptShowPage id={id} />;
+  return <ManuscriptShowPage showTitle="My Uploads" id={id} />;
 }

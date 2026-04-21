@@ -127,6 +127,18 @@ Returned when the manuscript is found.
     "student_name": "John Doe",
     "pdf_url": "/rails/active_storage/blobs/redirect/.../sample.pdf",
     "cover_img_url": "/rails/active_storage/blobs/redirect/.../sample-cover.jpg",
+    "audit_logs": [
+      {
+        "id": 10,
+        "editor_id": 4,
+        "editor_name": "Super Admin",
+        "editor_role": "admin",
+        "field_changes": {
+          "status": ["pending", "approve"]
+        },
+        "created_at": "2026-04-20T13:00:00.000Z"
+      }
+    ],
     "created_at": "2026-04-08T00:00:00.000Z",
     "updated_at": "2026-04-08T00:00:00.000Z"
   }

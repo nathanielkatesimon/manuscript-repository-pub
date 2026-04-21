@@ -4,6 +4,8 @@ import Topbar from "@/app/components/Topbar";
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard" },
+  { label: "Categories", href: "/admin/categories" },
+  { label: "Manage Categories", href: "/admin/manage-categories" },
   { label: "Download Requests", href: "/admin/download-requests" },
   { label: "Manuscripts", href: "/admin/manuscripts" },
   { label: "Students", href: "/admin/students" },

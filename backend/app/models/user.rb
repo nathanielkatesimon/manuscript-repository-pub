@@ -6,6 +6,7 @@ class User < ApplicationRecord
   has_one_attached :avatar
 
   has_many :feedbacks
+  has_many :notifications, dependent: :destroy
 
   before_save :normalize_email
 

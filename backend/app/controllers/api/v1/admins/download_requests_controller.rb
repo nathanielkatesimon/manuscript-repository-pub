@@ -17,6 +17,7 @@ class Api::V1::Admins::DownloadRequestsController < ApplicationController
 
   def update
     if @download_request.update(download_request_params)
+      notify_student_for_decision!
       render json: { data: Api::V1::DownloadRequestSerializer.new(@download_request).as_json }, status: :ok
     else
       render json: { errors: @download_request.errors.full_messages }, status: :unprocessable_entity
@@ -37,5 +38,24 @@ class Api::V1::Admins::DownloadRequestsController < ApplicationController
 
   def download_request_params
     params.require(:download_request).permit(:status, :rejection_reason)
+  end
+
+  def notify_student_for_decision!
+    return unless @download_request.saved_change_to_status?
+    return unless @download_request.approved? || @download_request.rejected?
+
+    status_text = @download_request.status.humanize.downcase
+    manuscript_title = @download_request.manuscript&.title || "your manuscript"
+
+    NotificationDispatcher.notify(
+      user: @download_request.student,
+      message: "Your download request for \"#{manuscript_title}\" was #{status_text}.",
+      notification_type: "download_request_status_update",
+      metadata: {
+        download_request_id: @download_request.id,
+        manuscript_id: @download_request.manuscript_id,
+        status: @download_request.status
+      }
+    )
   end
 end

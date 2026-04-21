@@ -23,8 +23,18 @@ interface ManuscriptDetail {
   student_name: string | null;
   adviser_id: number | null;
   pdf_url: string | null;
+  audit_logs?: AuditLog[];
   created_at: string;
   updated_at: string;
+}
+
+interface AuditLog {
+  id: number;
+  editor_id: number;
+  editor_name: string | null;
+  editor_role: string | null;
+  field_changes: Record<string, [unknown, unknown]>;
+  created_at: string;
 }
 
 interface Feedback {
@@ -464,6 +474,52 @@ export default function AdminManuscriptShowPage({ id }: { id: string }) {
                 <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
                   {fb.content}
                 </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* ── Audit Logs ─────────────────────────────────────────────────── */}
+      <div className="border-t border-gray-200 px-8 py-6">
+        <h2 className="mb-4 text-lg font-bold text-gray-900">
+          Audit Logs{" "}
+          {manuscript.audit_logs && manuscript.audit_logs.length > 0 && (
+            <span className="text-sm font-normal text-gray-400">
+              ({manuscript.audit_logs.length})
+            </span>
+          )}
+        </h2>
+
+        {!manuscript.audit_logs || manuscript.audit_logs.length === 0 ? (
+          <p className="text-sm text-gray-400">No audit logs yet.</p>
+        ) : (
+          <ul className="flex flex-col gap-4">
+            {manuscript.audit_logs.map((log) => (
+              <li
+                key={log.id}
+                className="rounded-xl border border-gray-100 bg-gray-50 px-5 py-4"
+              >
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-gray-500">
+                    {log.editor_name ?? `User #${log.editor_id}`} ({log.editor_role ?? "unknown"})
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(log.created_at).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                </div>
+                <ul className="list-disc pl-5 text-sm text-gray-700">
+                  {Object.entries(log.field_changes).map(([field, values]) => (
+                    <li key={`${log.id}-${field}`}>
+                      <span className="font-medium">{field}</span>: {String(values[0] ?? "nil")} →{" "}
+                      {String(values[1] ?? "nil")}
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
           </ul>

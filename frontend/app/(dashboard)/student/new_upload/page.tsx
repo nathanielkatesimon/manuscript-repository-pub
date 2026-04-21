@@ -7,6 +7,7 @@ import TextAreaField from "@/app/components/TextAreaField";
 import { swal } from "@/lib/swal";
 import useUserStore from "@/store/userStore";
 import { apiFetch } from "@/lib/apiFetch";
+import type { Category } from "@/lib/categories";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -22,27 +23,6 @@ const RESEARCH_TYPES = [
   "Mixed-Methods Research", "Narrative Research", "Observational Research",
   "Product Development Research", "Qualitative Research", "Quantitative Research",
   "Quasi-Experimental Research", "System Development Research", "Theoretical Research",
-].map((t) => ({ value: t, label: t }));
-
-const PROGRAM_TRACKS = [
-  "STEM (Science, Technology, Engineering, and Mathematics)",
-  "ABM (Accountancy, Business and Management)",
-  "HUMSS (Humanities and Social Sciences)",
-  "GAS (General Academic Strand)",
-  "TVL — Information and Communications Technology (ICT)",
-  "TVL — Home Economics (HE)",
-  "TVL — Industrial Arts (IA)",
-  "TVL — Agri-Fishery Arts (AFA)",
-  "BS Computer Science",
-  "BS Information Technology",
-  "BS Education",
-  "BS Business Administration",
-  "BS Nursing",
-  "BS Electronics and Communications Engineering",
-  "BS Civil Engineering",
-  "Diploma in Information and Communications Technology",
-  "Diploma in Business Administration",
-  "Diploma in Hospitality and Tourism",
 ].map((t) => ({ value: t, label: t }));
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -174,7 +154,9 @@ function StepMetadata({
   const [adviserId, setAdviserId] = useState("");
   const [abstract, setAbstract] = useState("");
   const [adviserOptions, setAdviserOptions] = useState<AdviserOption[]>([]);
+  const [programTrackOptions, setProgramTrackOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [adviserLoadError, setAdviserLoadError] = useState(false);
+  const [categoryLoadError, setCategoryLoadError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const wordCount = countWords(abstract);
@@ -198,6 +180,27 @@ function StepMetadata({
       })
       .catch(() => {
         setAdviserLoadError(true);
+      });
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    apiFetch(`${API_BASE_URL}/api/v1/categories`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.data)) {
+          setProgramTrackOptions(
+            (data.data as Category[]).map((category) => ({
+              value: category.name,
+              label: category.name,
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        setCategoryLoadError(true);
       });
   }, [token]);
 
@@ -312,11 +315,16 @@ function StepMetadata({
         <SelectField
           label="Program/Track/Strand"
           placeholder="Select"
-          options={PROGRAM_TRACKS}
+          options={programTrackOptions}
           required={true}
           value={programTrack}
           onChange={(e) => setProgramTrack(e.target.value)}
         />
+        {categoryLoadError && (
+          <p className="text-xs text-red-500 sm:col-span-3 -mt-2">
+            Could not load categories. Please refresh or try again later.
+          </p>
+        )}
 
         <SelectField
           label="Research Type"

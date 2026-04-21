@@ -5,8 +5,10 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import useUserStore from "@/store/userStore";
 import ManuscriptCard, { type Manuscript } from "@/app/components/ManuscriptCard";
-import { PROGRAM_TO_CATEGORY } from "../page";
 import { apiFetch } from "@/lib/apiFetch";
+import React from "react";
+import StudentTopbar from "@/app/components/student/StudentTopbar";
+import { buildProgramToCategoryMap, type Category } from "@/lib/categories";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -90,7 +92,7 @@ function Pagination({
 export default function CategoryProgramPage() {
   const { program: encodedProgram } = useParams<{ program: string }>();
   const program = decodeURIComponent(encodedProgram ?? "");
-  const parentCategory = PROGRAM_TO_CATEGORY[program] ?? "Categories";
+  const [parentCategory, setParentCategory] = useState("Categories");
 
   const { token } = useUserStore();
   const [manuscripts, setManuscripts] = useState<Manuscript[]>([]);
@@ -100,6 +102,23 @@ export default function CategoryProgramPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchCategories = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/categories`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const categories: Category[] = data.data ?? [];
+      const programToCategory = buildProgramToCategoryMap(categories);
+      setParentCategory(programToCategory[program] ?? "Categories");
+    } catch {
+      setParentCategory("Categories");
+    }
+  }, [token, program]);
 
   // Debounce search input
   useEffect(() => {
@@ -148,122 +167,129 @@ export default function CategoryProgramPage() {
     fetchManuscripts();
   }, [fetchManuscripts]);
 
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
   return (
-    <div className="flex flex-col gap-6 px-8 py-8">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-gray-500" aria-label="Breadcrumb">
-        <Link href="/student/categories" className="hover:text-gray-900 hover:underline underline-offset-2 transition-colors">
-          Categories
-        </Link>
-        <span className="text-gray-300">›</span>
-        <span className="text-gray-500">{parentCategory}</span>
-        <span className="text-gray-300">›</span>
-        <span className="text-gray-900 font-medium">{program}</span>
-      </nav>
-
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{program}</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Approved manuscripts filed under this program or track.
-        </p>
-      </div>
-
-      {/* Search bar */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-md">
-            <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search manuscripts…"
-              className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
-            />
+    <React.Fragment>
+      <StudentTopbar title="Categories" />
+      <div className="flex flex-col gap-6 px-8 py-8">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-sm text-gray-500" aria-label="Breadcrumb">
+          <Link href="/student/categories" className="hover:text-gray-900 hover:underline underline-offset-2 transition-colors">
+            Categories
+          </Link>
+          <span className="text-gray-300">›</span>
+          <span className="text-gray-500">{parentCategory}</span>
+          <span className="text-gray-300">›</span>
+          <span className="text-gray-900 font-medium">{program}</span>
+        </nav>
+  
+        {/* Page header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{program}</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Approved manuscripts filed under this program or track.
+          </p>
+        </div>
+  
+        {/* Search bar */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 max-w-md">
+              <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </span>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search manuscripts…"
+                className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
+              />
+            </div>
+  
+            {!loading && (
+              <p className="text-sm text-gray-400">
+                {meta.total_count} {meta.total_count === 1 ? "result" : "results"}
+              </p>
+            )}
           </div>
-
-          {!loading && (
-            <p className="text-sm text-gray-400">
-              {meta.total_count} {meta.total_count === 1 ? "result" : "results"}
-            </p>
-          )}
+          <p className="text-xs text-gray-400">
+            Searches by title, author(s), and research type.
+          </p>
         </div>
-        <p className="text-xs text-gray-400">
-          Searches by title, author(s), and research type.
-        </p>
+  
+        {/* Divider */}
+        <hr className="border-gray-200" />
+  
+        {/* Loading state */}
+        {loading && (
+          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+            Loading…
+          </div>
+        )}
+  
+        {/* Error state */}
+        {!loading && error && (
+          <div className="flex items-center justify-center py-20 text-red-500 text-sm">
+            {error}
+          </div>
+        )}
+  
+        {/* Empty state */}
+        {!loading && !error && manuscripts.length === 0 && (
+          <div className="flex flex-col items-center justify-center gap-3 py-20 text-gray-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <p className="text-sm">No manuscripts found.</p>
+          </div>
+        )}
+  
+        {/* Grid */}
+        {!loading && !error && manuscripts.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            {manuscripts.map((m) => (
+              <ManuscriptCard key={m.id} manuscript={m} href={`/student/repository/${m.id}`} />
+            ))}
+          </div>
+        )}
+  
+        {/* Pagination */}
+        {!loading && !error && (
+          <Pagination
+            currentPage={meta.current_page}
+            totalPages={meta.total_pages}
+            onPageChange={(p) => setPage(p)}
+          />
+        )}
       </div>
-
-      {/* Divider */}
-      <hr className="border-gray-200" />
-
-      {/* Loading state */}
-      {loading && (
-        <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
-          Loading…
-        </div>
-      )}
-
-      {/* Error state */}
-      {!loading && error && (
-        <div className="flex items-center justify-center py-20 text-red-500 text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && !error && manuscripts.length === 0 && (
-        <div className="flex flex-col items-center justify-center gap-3 py-20 text-gray-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>
-          <p className="text-sm">No manuscripts found.</p>
-        </div>
-      )}
-
-      {/* Grid */}
-      {!loading && !error && manuscripts.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-          {manuscripts.map((m) => (
-            <ManuscriptCard key={m.id} manuscript={m} href={`/student/repository/${m.id}`} />
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!loading && !error && (
-        <Pagination
-          currentPage={meta.current_page}
-          totalPages={meta.total_pages}
-          onPageChange={(p) => setPage(p)}
-        />
-      )}
-    </div>
+    </React.Fragment>
   );
 }

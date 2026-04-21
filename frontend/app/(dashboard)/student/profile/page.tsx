@@ -10,6 +10,7 @@ import useUserStore from "@/store/userStore";
 import { StudentUser } from "@/store/userStore";
 import { ALL_COURSES, ALL_YEAR_LEVELS } from "@/lib/yearLevelCourseData";
 import { apiFetch } from "@/lib/apiFetch";
+import StudentTopbar from "@/app/components/student/StudentTopbar";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -148,7 +149,8 @@ export default function StudentProfilePage() {
 
   const effectiveAvatarUrl = avatarPreview ? null : (user?.avatar_url ?? null);
 
-  return (
+  return <React.Fragment>
+    <StudentTopbar title="Profile" />
     <div className="px-8 py-10 flex flex-col gap-10 max-w-2xl">
       {/* Avatar */}
       <section className="flex flex-col gap-4">
@@ -281,5 +283,5 @@ export default function StudentProfilePage() {
         </form>
       </section>
     </div>
-  );
+  </React.Fragment>
 }

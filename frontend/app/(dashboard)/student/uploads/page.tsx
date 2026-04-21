@@ -5,6 +5,8 @@ import useUserStore from "@/store/userStore";
 import ManuscriptCard, { type Manuscript } from "@/app/components/ManuscriptCard";
 import { apiFetch } from "@/lib/apiFetch";
 import SelectField from "@/app/components/SelectField";
+import React from "react";
+import StudentTopbar from "@/app/components/student/StudentTopbar";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -158,11 +160,11 @@ export default function UploadsPage() {
     fetchManuscripts();
   }, [fetchManuscripts]);
 
-  return (
+  return <React.Fragment>
+    <StudentTopbar title="My Uploads" />
     <div className="flex flex-col gap-6 px-8 py-8">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Uploads</h1>
         <p className="mt-1 text-sm text-gray-500">
           View and manage the manuscripts you have submitted.
         </p>
@@ -273,6 +275,6 @@ export default function UploadsPage() {
         />
       )}
     </div>
-  );
+  </React.Fragment>
 }
 

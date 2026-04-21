@@ -4,6 +4,7 @@ class Manuscript < ApplicationRecord
 
   has_many :feedbacks, dependent: :destroy
   has_many :download_requests, dependent: :destroy
+  has_many :audit_logs, class_name: "ManuscriptAuditLog", dependent: :destroy
 
   has_one_attached :pdf
   has_one_attached :cover_img

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import useUserStore from "@/store/userStore";
 import { apiFetch } from "@/lib/apiFetch";
+import React from "react";
+import StudentTopbar from "./student/StudentTopbar";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -21,6 +23,17 @@ interface ManuscriptDetail {
   student_id: number | null;
   adviser_id: number | null;
   pdf_url: string | null;
+}
+
+interface Feedback {
+  id: number;
+  content: string;
+  user_id: number;
+  user_first_name: string | null;
+  user_last_name: string | null;
+  manuscript_id: number;
+  created_at: string;
+  updated_at: string;
 }
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
@@ -54,9 +67,10 @@ function MetaItem({ icon, label, value }: { icon: React.ReactNode; label: string
   );
 }
 
-export default function ManuscriptShowPage({ id }: { id: string }) {
+export default function ManuscriptShowPage({ id, showTitle }: { showTitle?: string, id: string }) {
   const { token, user } = useUserStore();
   const [manuscript, setManuscript] = useState<ManuscriptDetail | null>(null);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,6 +106,30 @@ export default function ManuscriptShowPage({ id }: { id: string }) {
 
     fetchManuscript();
   }, [token, id]);
+
+  const isStudentOwner = user?.role === "student" && manuscript?.student_id === user.id;
+
+  useEffect(() => {
+    if (!token || !manuscript || !isStudentOwner) {
+      setFeedbacks([]);
+      return;
+    }
+
+    const fetchFeedbacks = async () => {
+      try {
+        const res = await apiFetch(`${API_BASE_URL}/api/v1/manuscripts/${id}/feedbacks`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setFeedbacks(data.data ?? []);
+      } catch {
+        // silently fail for feedbacks
+      }
+    };
+
+    fetchFeedbacks();
+  }, [token, id, manuscript, isStudentOwner]);
 
   const isOwner = user && manuscript && (
     (user.role === "student" && manuscript.student_id === user.id) ||
@@ -173,8 +211,8 @@ export default function ManuscriptShowPage({ id }: { id: string }) {
     ? new Date(manuscript.completion_date).getFullYear().toString()
     : null;
 
-  return (
-    <div className="flex flex-col gap-8 px-8 py-8">
+  return <React.Fragment>
+    <StudentTopbar title={showTitle || "Manuscript"}>
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-primary overflow-hidden">
         <div className="flex flex-col md:flex-row gap-8 p-8 md:p-10">
@@ -273,7 +311,8 @@ export default function ManuscriptShowPage({ id }: { id: string }) {
           </div>
         </div>
       </div>
-      
+    </StudentTopbar>
+    <div className="flex flex-col gap-8 px-8 py-8">      
       {/* ── Abstract ──────────────────────────────────────────────────── */}
       {manuscript.abstract && (
         <div className="px-8 py-6">
@@ -281,6 +320,48 @@ export default function ManuscriptShowPage({ id }: { id: string }) {
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
             {manuscript.abstract}
           </p>
+        </div>
+      )}
+
+      {isStudentOwner && (
+        <div className="border-t border-gray-200 px-8 py-6">
+          <h2 className="mb-4 text-lg font-bold text-gray-900">
+            Adviser Feedbacks{" "}
+            {feedbacks.length > 0 && (
+              <span className="text-sm font-normal text-gray-400">({feedbacks.length})</span>
+            )}
+          </h2>
+
+          {feedbacks.length === 0 ? (
+            <p className="text-sm text-gray-400">No feedbacks yet.</p>
+          ) : (
+            <ul className="flex flex-col gap-4">
+              {feedbacks.map((fb) => (
+                <li
+                  key={fb.id}
+                  className="rounded-xl border border-gray-100 bg-gray-50 px-5 py-4"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-gray-500">
+                      {fb.user_first_name && fb.user_last_name
+                        ? `${fb.user_first_name} ${fb.user_last_name}`
+                        : `User #${fb.user_id}`}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(fb.created_at).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <blockquote className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    {fb.content}
+                  </blockquote>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -385,5 +466,5 @@ export default function ManuscriptShowPage({ id }: { id: string }) {
         </div>
       )}
     </div>
-  );
+  </React.Fragment>
 }

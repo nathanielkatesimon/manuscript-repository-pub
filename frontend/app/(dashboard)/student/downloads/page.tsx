@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import useUserStore from "@/store/userStore";
 import { apiFetch } from "@/lib/apiFetch";
+import React from "react";
+import StudentTopbar from "@/app/components/student/StudentTopbar";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -151,128 +153,130 @@ export default function MyDownloadsPage() {
   }, [fetchRequests]);
 
   return (
-    <div className="flex flex-col gap-6 px-8 py-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Downloads</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Track your manuscript download requests and access approved downloads.
-        </p>
+    <React.Fragment>
+      <StudentTopbar title="My Downloads" />
+      <div className="flex flex-col gap-6 px-8 py-8">
+        {/* Page header */}
+        <div>
+          <p className="mt-1 text-sm text-gray-500">
+            Track your manuscript download requests and access approved downloads.
+          </p>
+        </div>
+  
+        {/* Count */}
+        {!loading && (
+          <p className="text-sm text-gray-400">
+            {meta.total_count} {meta.total_count === 1 ? "request" : "requests"}
+          </p>
+        )}
+  
+        {/* Divider */}
+        <hr className="border-gray-200" />
+  
+        {/* Loading state */}
+        {loading && (
+          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+            Loading…
+          </div>
+        )}
+  
+        {/* Error state */}
+        {!loading && error && (
+          <div className="flex items-center justify-center py-20 text-red-500 text-sm">
+            {error}
+          </div>
+        )}
+  
+        {/* Empty state */}
+        {!loading && !error && requests.length === 0 && (
+          <div className="flex flex-col items-center justify-center gap-3 py-20 text-gray-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <p className="text-sm">You have no download requests yet.</p>
+          </div>
+        )}
+  
+        {/* Grid */}
+        {!loading && !error && requests.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            {requests.map((req) => {
+              const coverSrc = req.manuscript_cover_img_url
+                ? `${API_BASE_URL}${req.manuscript_cover_img_url}`
+                : null;
+              return (
+                <Link
+                  key={req.id}
+                  href={`/student/downloads/${req.id}`}
+                  className="block hover:opacity-90 transition-opacity"
+                >
+                  <div className="flex flex-col gap-2">
+                    <div
+                      className="relative overflow-hidden rounded-lg bg-gray-100 shadow-sm mx-auto hover:scale-105 transition-transform"
+                      style={{ width: 169, height: 232 }}
+                    >
+                      {coverSrc ? (
+                        <Image
+                          src={coverSrc}
+                          alt={req.manuscript_title ?? "Manuscript"}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-gray-300">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="48"
+                            height="48"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                          </svg>
+                        </div>
+                      )}
+                      <RequestStatusBadge status={req.status} />
+                    </div>
+                    <div className="w-full" style={{ maxWidth: 169, margin: "0 auto" }}>
+                      <p className="truncate text-sm font-semibold text-gray-900 leading-snug">
+                        {req.manuscript_title ?? "Untitled"}
+                      </p>
+                      <p className="text-xs text-gray-500 capitalize">{req.status}</p>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+  
+        {/* Pagination */}
+        {!loading && !error && (
+          <Pagination
+            currentPage={meta.current_page}
+            totalPages={meta.total_pages}
+            onPageChange={(p) => setPage(p)}
+          />
+        )}
       </div>
-
-      {/* Count */}
-      {!loading && (
-        <p className="text-sm text-gray-400">
-          {meta.total_count} {meta.total_count === 1 ? "request" : "requests"}
-        </p>
-      )}
-
-      {/* Divider */}
-      <hr className="border-gray-200" />
-
-      {/* Loading state */}
-      {loading && (
-        <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
-          Loading…
-        </div>
-      )}
-
-      {/* Error state */}
-      {!loading && error && (
-        <div className="flex items-center justify-center py-20 text-red-500 text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && !error && requests.length === 0 && (
-        <div className="flex flex-col items-center justify-center gap-3 py-20 text-gray-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          <p className="text-sm">You have no download requests yet.</p>
-        </div>
-      )}
-
-      {/* Grid */}
-      {!loading && !error && requests.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-          {requests.map((req) => {
-            const coverSrc = req.manuscript_cover_img_url
-              ? `${API_BASE_URL}${req.manuscript_cover_img_url}`
-              : null;
-            return (
-              <Link
-                key={req.id}
-                href={`/student/downloads/${req.id}`}
-                className="block hover:opacity-90 transition-opacity"
-              >
-                <div className="flex flex-col gap-2">
-                  <div
-                    className="relative overflow-hidden rounded-lg bg-gray-100 border border-gray-200 mx-auto"
-                    style={{ width: 169, height: 232 }}
-                  >
-                    {coverSrc ? (
-                      <Image
-                        src={coverSrc}
-                        alt={req.manuscript_title ?? "Manuscript"}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-gray-300">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="48"
-                          height="48"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-                    )}
-                    <RequestStatusBadge status={req.status} />
-                  </div>
-                  <div className="w-full" style={{ maxWidth: 169, margin: "0 auto" }}>
-                    <p className="truncate text-sm font-semibold text-gray-900 leading-snug">
-                      {req.manuscript_title ?? "Untitled"}
-                    </p>
-                    <p className="text-xs text-gray-500 capitalize">{req.status}</p>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!loading && !error && (
-        <Pagination
-          currentPage={meta.current_page}
-          totalPages={meta.total_pages}
-          onPageChange={(p) => setPage(p)}
-        />
-      )}
-    </div>
+    </React.Fragment>
   );
 }

@@ -7,6 +7,12 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resources :notifications, only: %i[index update] do
+        collection do
+          patch :mark_all_read
+        end
+      end
+
       namespace :students do
         resource :registration, only: :create
         resource :session, only: :create
@@ -25,6 +31,7 @@ Rails.application.routes.draw do
         resource :profile, only: %i[show update]
         resource :dashboard, only: :show
         resources :download_requests, only: %i[index show update]
+        resources :categories
         resources :advisers, only: %i[create update destroy]
         resources :students, only: %i[index show create update destroy]
         resources :manuscripts, only: %i[index show]
@@ -37,6 +44,7 @@ Rails.application.routes.draw do
 
       resources :advisers, only: %i[index show]
       resources :students, only: :show
+      resources :categories, only: :index
       resources :manuscripts do
         resources :feedbacks, only: %i[index create]
         member do
@@ -45,4 +53,6 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  mount ActionCable.server => "/cable"
 end

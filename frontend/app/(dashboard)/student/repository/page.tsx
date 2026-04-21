@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import useUserStore from "@/store/userStore";
 import ManuscriptCard, { type Manuscript } from "@/app/components/ManuscriptCard";
 import { apiFetch } from "@/lib/apiFetch";
+import React from "react";
+import StudentTopbar from "@/app/components/student/StudentTopbar";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -141,110 +143,119 @@ export default function RepositoryPage() {
   }, [fetchManuscripts]);
 
   return (
-    <div className="flex flex-col gap-6 px-8 py-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Manuscript Repository</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Browse and discover research manuscripts submitted by students across all programs.
-        </p>
-      </div>
-
-      {/* Search bar */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-md">
-            <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+    <React.Fragment>
+      
+      <StudentTopbar title="Manuscript Repository">
+          {/* Page header */}
+          <div>
+            <p className="mb-2 text-sm text-gray-300">
+              Browse and discover research manuscripts submitted by students across all programs.
+            </p>
+          </div>
+  
+          {/* Search bar */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 max-w-md">
+                <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </span>
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search manuscripts…"
+                  className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
+                />
+              </div>
+  
+              {!loading && (
+                <p className="text-sm text-gray-400">
+                  {meta.total_count} {meta.total_count === 1 ? "result" : "results"}
+                </p>
+              )}
+            </div>
+            <p className="text-xs text-gray-400">
+              Searches by title, author(s), and research type.
+          </p>
+          {!loading && !error && manuscripts.length > 0 && 
+            <>
+              <br/><br/><br/><br/>
+            </>
+          }
+        </div>
+      </StudentTopbar>
+      
+      <main className="flex-1 z-50 -translate-y-24">
+        
+        <div className="flex flex-col gap-6 px-8">
+          {/* Loading state */}
+          {loading && (
+            <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+              Loading…
+            </div>
+          )}
+  
+          {/* Error state */}
+          {!loading && error && (
+            <div className="flex items-center justify-center py-20 text-red-500 text-sm mt-8">
+              {error}
+            </div>
+          )}
+  
+          {/* Empty state */}
+          {!loading && !error && manuscripts.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-3 py-20 text-gray-400 mt-12">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="48"
+                height="48"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
               </svg>
-            </span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search manuscripts…"
-              className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-tint focus:bg-white focus:outline-none transition-colors"
+              <p className="text-sm">No manuscripts found.</p>
+            </div>
+          )}
+  
+          {/* Grid */}
+          {!loading && !error && manuscripts.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {manuscripts.map((m) => (
+                <ManuscriptCard key={m.id} manuscript={m} href={`/student/repository/${m.id}`} />
+              ))}
+            </div>
+          )}
+  
+          {/* Pagination */}
+          {!loading && !error && (
+            <Pagination
+              currentPage={meta.current_page}
+              totalPages={meta.total_pages}
+              onPageChange={(p) => setPage(p)}
             />
-          </div>
-
-          {!loading && (
-            <p className="text-sm text-gray-400">
-              {meta.total_count} {meta.total_count === 1 ? "result" : "results"}
-            </p>
           )}
         </div>
-        <p className="text-xs text-gray-400">
-          Searches by title, author(s), and research type.
-        </p>
-      </div>
-
-      {/* Divider */}
-      <hr className="border-gray-200" />
-
-      {/* Loading state */}
-      {loading && (
-        <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
-          Loading…
-        </div>
-      )}
-
-      {/* Error state */}
-      {!loading && error && (
-        <div className="flex items-center justify-center py-20 text-red-500 text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && !error && manuscripts.length === 0 && (
-        <div className="flex flex-col items-center justify-center gap-3 py-20 text-gray-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>
-          <p className="text-sm">No manuscripts found.</p>
-        </div>
-      )}
-
-      {/* Grid */}
-      {!loading && !error && manuscripts.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-          {manuscripts.map((m) => (
-            <ManuscriptCard key={m.id} manuscript={m} href={`/student/repository/${m.id}`} />
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!loading && !error && (
-        <Pagination
-          currentPage={meta.current_page}
-          totalPages={meta.total_pages}
-          onPageChange={(p) => setPage(p)}
-        />
-      )}
-    </div>
+      </main>
+    </React.Fragment>
   );
 }
