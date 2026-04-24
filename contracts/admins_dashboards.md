@@ -32,6 +32,13 @@ Returned when the dashboard stats are successfully retrieved.
     "students_count": 42,
     "advisers_count": 10,
     "manuscripts_count": 35,
+    "manuscripts": {
+      "total": 35,
+      "pending": 10,
+      "approve": 18,
+      "revision": 5,
+      "rejected": 2
+    },
     "download_requests": {
       "total": 20,
       "pending": 5,

@@ -6,6 +6,14 @@ import { apiFetch } from "@/lib/apiFetch";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
+interface ManuscriptCounts {
+  total: number;
+  pending: number;
+  approve: number;
+  revision: number;
+  rejected: number;
+}
+
 interface DownloadRequestCounts {
   total: number;
   pending: number;
@@ -17,6 +25,7 @@ interface DashboardStats {
   students_count: number;
   advisers_count: number;
   manuscripts_count: number;
+  manuscripts: ManuscriptCounts;
   download_requests: DownloadRequestCounts;
 }
 
@@ -107,7 +116,35 @@ function BarChart({ pending, approved, rejected, total }: DownloadRequestCounts)
     <div className="flex flex-col gap-2.5 mt-5">
       {rows.map((r) => (
         <div key={r.label} className="flex items-center gap-3 text-xs">
-          <span className="w-14 text-gray-500 shrink-0">{r.label}</span>
+          <span className="w-20 text-gray-500 shrink-0">{r.label}</span>
+          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${r.pct}%`, background: r.color }}
+            />
+          </div>
+          <span className="w-8 text-right font-medium text-gray-700">{r.pct}%</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ManuscriptBarChart({ pending, approve, revision, rejected, total }: ManuscriptCounts) {
+  const pct = (n: number) => (total === 0 ? 0 : Math.round((n / total) * 100));
+
+  const rows = [
+    { label: "Pending",      value: pending,  pct: pct(pending),  color: "#EF9F27" },
+    { label: "For Revision", value: revision, pct: pct(revision), color: "#378ADD" },
+    { label: "Approved",     value: approve,  pct: pct(approve),  color: "#639922" },
+    { label: "Rejected",     value: rejected, pct: pct(rejected), color: "#E24B4A" },
+  ];
+
+  return (
+    <div className="flex flex-col gap-2.5 mt-5">
+      {rows.map((r) => (
+        <div key={r.label} className="flex items-center gap-3 text-xs">
+          <span className="w-20 text-gray-500 shrink-0">{r.label}</span>
           <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
@@ -199,6 +236,31 @@ export default function AdminDashboardPage() {
               }
             />
           </div>
+
+          <Divider />
+
+          {/* Manuscripts */}
+          <div className="flex items-end justify-between mb-3">
+            <div>
+              <SectionLabel>Manuscripts</SectionLabel>
+              <p className="text-xs text-gray-400 -mt-2">
+                Breakdown of all submitted research papers by status.
+              </p>
+            </div>
+            <span className="text-xs font-medium text-gray-500 bg-gray-100 rounded-full px-3 py-1">
+              {stats.manuscripts.total} total
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <RequestCard value={stats.manuscripts.total}    label="Total" />
+            <RequestCard value={stats.manuscripts.pending}  label="Pending"      accentColor="#EF9F27" badge={stats.manuscripts.pending > 0 ? "Needs review" : undefined} />
+            <RequestCard value={stats.manuscripts.revision} label="For Revision" accentColor="#378ADD" />
+            <RequestCard value={stats.manuscripts.approve}  label="Approved"     accentColor="#639922" />
+            <RequestCard value={stats.manuscripts.rejected} label="Rejected"     accentColor="#E24B4A" />
+          </div>
+
+          <ManuscriptBarChart {...stats.manuscripts} />
 
           <Divider />
 

@@ -8,6 +8,13 @@ class Api::V1::Admins::DashboardsController < ApplicationController
         students_count: Student.count,
         advisers_count: Adviser.count,
         manuscripts_count: Manuscript.count,
+        manuscripts: {
+          total: Manuscript.count,
+          pending: Manuscript.pending.count,
+          approve: Manuscript.approve.count,
+          revision: Manuscript.revision.count,
+          rejected: Manuscript.rejected.count
+        },
         download_requests: {
           total: DownloadRequest.count,
           pending: DownloadRequest.pending.count,
