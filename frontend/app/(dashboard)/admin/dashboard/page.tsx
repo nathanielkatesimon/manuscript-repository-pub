@@ -33,9 +33,9 @@ interface DashboardStats {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-3">
+    <h1 className="font-medium uppercase tracking-widest text-black mb-3">
       {children}
-    </p>
+    </h1>
   );
 }
 
