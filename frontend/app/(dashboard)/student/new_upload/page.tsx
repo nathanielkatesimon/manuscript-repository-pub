@@ -29,6 +29,8 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 const MAX_ABSTRACT_WORDS = 300;
 
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB in bytes
+
 function countWords(text: string) {
   return text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
 }
@@ -55,6 +57,10 @@ function StepUpload({
   function handleFile(f: File) {
     if (f.type !== "application/pdf") {
       swal.error("Invalid File Type", "Only PDF files are accepted. Please upload a .pdf file.");
+      return;
+    }
+    if (f.size > MAX_FILE_SIZE) {
+      swal.error("File Too Large", "The selected file exceeds the maximum allowed size of 500 MB. Please upload a smaller file.");
       return;
     }
     onFileChange(f);
@@ -107,7 +113,7 @@ function StepUpload({
       </button>
 
       <p className="text-xs text-gray-500">
-        Supported file type: PDF only.
+        Supported file type: PDF only. Maximum file size: 500 MB.
       </p>
 
       {/* IP notice */}

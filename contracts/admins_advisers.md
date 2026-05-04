@@ -5,10 +5,11 @@
 `POST /api/v1/admins/advisers`
 `PATCH /api/v1/admins/advisers/:id`
 `DELETE /api/v1/admins/advisers/:id`
+`GET /api/v1/admins/advisers/export`
 
 ## Description
 
-Allows admins to create, update, and delete adviser accounts. `auth_id` is set at creation and is immutable.
+Allows admins to create, update, delete, and export adviser accounts. `auth_id` is set at creation and is immutable.
 
 ## Request
 
@@ -118,3 +119,20 @@ Same structure as 201, with `status: 200`.
   "errors": ["Email has already been taken"]
 }
 ```
+
+### 200 OK (GET /api/v1/admins/advisers/export)
+
+Returns a binary `.xlsx` file attachment containing all advisers ordered by creation date descending.
+
+| Column     | Description                    |
+| ---------- | ------------------------------ |
+| Adviser ID | `auth_id`                      |
+| Name       | Full name (first middle last)  |
+| Email      | Email address                  |
+| Department | Department name                |
+| Role       | Always `adviser`               |
+| Created At | `YYYY-MM-DD HH:MM:SS`          |
+
+Response headers:
+- `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- `Content-Disposition: attachment; filename="advisers_YYYYMMDD.xlsx"`

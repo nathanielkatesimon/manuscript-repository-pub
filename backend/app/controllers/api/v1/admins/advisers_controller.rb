@@ -3,6 +3,32 @@ class Api::V1::Admins::AdvisersController < ApplicationController
   before_action :authorize_admin!
   before_action :set_adviser, only: %i[update destroy]
 
+  def export
+    advisers = Adviser.order(created_at: :desc)
+
+    package = Axlsx::Package.new
+    package.workbook.add_worksheet(name: "Advisers") do |sheet|
+      sheet.add_row([ "Adviser ID", "Name", "Email", "Department", "Role", "Created At" ],
+                    b: true)
+      advisers.each do |a|
+        full_name = [ a.first_name, a.middle_name, a.last_name ].compact.join(" ")
+        sheet.add_row([
+          a.auth_id,
+          full_name,
+          a.email,
+          a.department,
+          a.role,
+          a.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        ])
+      end
+    end
+
+    send_data package.to_stream.read,
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              disposition: "attachment",
+              filename: "advisers_#{Date.today.strftime('%Y%m%d')}.xlsx"
+  end
+
   def create
     adviser = Adviser.new(create_params)
 

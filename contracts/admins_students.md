@@ -4,13 +4,14 @@
 
 `GET /api/v1/admins/students`
 `GET /api/v1/admins/students/:id`
+`GET /api/v1/admins/students/export`
 `POST /api/v1/admins/students`
 `PATCH /api/v1/admins/students/:id`
 `DELETE /api/v1/admins/students/:id`
 
 ## Description
 
-Allows admins to list, view, create, update, and delete student accounts. `auth_id` is set at creation and is immutable.
+Allows admins to list, view, create, update, delete, and export student accounts. `auth_id` is set at creation and is immutable.
 
 ## Request
 
@@ -150,3 +151,21 @@ Same structure as index item, with `status: 200`.
   "errors": ["Email has already been taken"]
 }
 ```
+
+### 200 OK (GET /api/v1/admins/students/export)
+
+Returns a binary `.xlsx` file attachment containing all students ordered by creation date descending.
+
+| Column         | Description                        |
+| -------------- | ---------------------------------- |
+| Student ID     | `auth_id`                          |
+| Name           | Full name (first middle last)      |
+| Email          | Email address                      |
+| Program / Track| Program, track, or strand          |
+| Year Level     | Year or grade level                |
+| Role           | Always `student`                   |
+| Created At     | `YYYY-MM-DD HH:MM:SS`              |
+
+Response headers:
+- `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- `Content-Disposition: attachment; filename="students_YYYYMMDD.xlsx"`

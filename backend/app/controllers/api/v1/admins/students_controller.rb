@@ -3,6 +3,33 @@ class Api::V1::Admins::StudentsController < ApplicationController
   before_action :authorize_admin!
   before_action :set_student, only: %i[show update destroy]
 
+  def export
+    students = Student.order(created_at: :desc)
+
+    package = Axlsx::Package.new
+    package.workbook.add_worksheet(name: "Students") do |sheet|
+      sheet.add_row([ "Student ID", "Name", "Email", "Program / Track", "Year Level", "Role", "Created At" ],
+                    b: true)
+      students.each do |s|
+        full_name = [ s.first_name, s.middle_name, s.last_name ].compact.join(" ")
+        sheet.add_row([
+          s.auth_id,
+          full_name,
+          s.email,
+          s.program_or_track,
+          s.year_level,
+          s.role,
+          s.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        ])
+      end
+    end
+
+    send_data package.to_stream.read,
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              disposition: "attachment",
+              filename: "students_#{Date.today.strftime('%Y%m%d')}.xlsx"
+  end
+
   def index
     students = Student.order(created_at: :desc)
     render json: {

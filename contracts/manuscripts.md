@@ -189,7 +189,7 @@ manuscript[pdf]=<file>
 | `status`           | string  | No       | Status: `pending`, `approve`, `revision`, `rejected` |
 | `student_id`       | integer | Yes      | ID of the student who authored the manuscript        |
 | `adviser_id`       | integer | Yes      | ID of the adviser assigned to the manuscript         |
-| `pdf`              | file    | Yes      | PDF file attachment (required)                       |
+| `pdf`              | file    | Yes      | PDF file attachment (required, max 500 MB)           |
 
 ### Responses
 
@@ -228,7 +228,7 @@ manuscript[pdf]=<file>
 
 ```json
 {
-  "errors": ["Title can't be blank", "Pdf must be attached"]
+  "errors": ["Title can't be blank", "Pdf must be attached", "Pdf file size must be less than 500 MB"]
 }
 ```
 

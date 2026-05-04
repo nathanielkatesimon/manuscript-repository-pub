@@ -48,4 +48,29 @@ class Api::V1::Admins::StudentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unauthorized
   end
+
+  # EXPORT
+  test "exports students as xlsx for admin" do
+    get export_api_v1_admins_students_path, headers: @auth_headers
+
+    assert_response :ok
+    assert_equal "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", response.content_type
+    assert_match(/attachment; filename="students_\d{8}\.xlsx"/, response.headers["Content-Disposition"])
+    assert response.body.length > 0
+  end
+
+  test "export returns unauthorized without token" do
+    get export_api_v1_admins_students_path
+
+    assert_response :unauthorized
+  end
+
+  test "export returns forbidden for non-admin user" do
+    student = users(:student_one)
+    token = JwtService.encode({ user_id: student.id, role: student.role })
+    get export_api_v1_admins_students_path,
+      headers: { "Authorization" => "Bearer #{token}" }
+
+    assert_response :forbidden
+  end
 end

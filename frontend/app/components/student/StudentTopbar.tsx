@@ -12,7 +12,7 @@ export default function StudentTopbar({ title, children }: { title?: string, chi
   return (
     <header className="bg-primary z-10 px-6 rounded-bl-2xl w-full">
       <nav className="top-0 flex h-16 items-center">
-        <h1 className="text-2xl font-bold text-white">{title}</h1>
+        <h1 className="text-2xl font-bold pi0">{title}</h1>
         
         <div className="ml-auto flex items-center gap-4">
           {/* New upload button */}

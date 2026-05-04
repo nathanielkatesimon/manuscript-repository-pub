@@ -12,8 +12,9 @@
  *   those that are valid for that level (e.g. selecting Grade 11 shows only
  *   Senior High strands; selecting 3rd Year shows only Bachelor's programs).
  * - When a course is selected the year level is automatically set to the
- *   default for that course (Grade 11 for SHS strands; 1st Year for college
- *   programs). All year levels remain available in the dropdown.
+ *   default for that course **only if no year level is already selected**
+ *   (Grade 11 for SHS strands; 1st Year for college programs).
+ *   If a year level is already chosen it is preserved.
  * - If the current course becomes incompatible with a newly selected year level
  *   it is reset to `null` automatically.
  *
@@ -59,8 +60,10 @@ export interface UseYearLevelAndCourseReturn {
   setYearLevel: (yearLevel: YearLevel | null) => void;
   /**
    * Set the active course.
-   * - Auto-selects the default year level for the chosen course:
-   *   Grade 11 for SHS strands; 1st Year for college programs.
+   * - Auto-selects the default year level for the chosen course **only when no
+   *   year level is currently selected**: Grade 11 for SHS strands; 1st Year
+   *   for college programs.
+   * - If a year level is already selected it is left unchanged.
    */
   setCourse: (course: Course | null) => void;
   /**
@@ -114,14 +117,15 @@ export function useYearLevelAndCourse(): UseYearLevelAndCourseReturn {
     setCourseState(newCourse);
 
     if (newCourse) {
-      // Auto-select the default year level for the chosen course:
-      //   - SHS strands  → Grade 11
-      //   - College programs → 1st Year
-      const defaultYearLevel =
-        newCourse.educationLevel === "senior_high"
-          ? SENIOR_HIGH_YEAR_LEVELS[0]   // grade_11
-          : COLLEGE_YEAR_LEVELS[0];      // college_1st
-      setYearLevelState(defaultYearLevel);
+      // Only auto-select a default year level when none is currently chosen.
+      // If a year level is already selected, leave it as-is.
+      if (!yearLevel) {
+        const defaultYearLevel =
+          newCourse.educationLevel === "senior_high"
+            ? SENIOR_HIGH_YEAR_LEVELS[0]   // grade_11
+            : COLLEGE_YEAR_LEVELS[0];      // college_1st
+        setYearLevelState(defaultYearLevel);
+      }
     } else {
       setYearLevelState(null);
     }

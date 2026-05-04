@@ -131,6 +131,41 @@ class ManuscriptTest < ActiveSupport::TestCase
     assert manuscript.cover_img.attached?, "Expected cover_img to be attached after create"
   end
 
+  test "manuscript pdf must be a PDF file" do
+    manuscript = Manuscript.new(
+      title: "My Paper",
+      student: @student,
+      adviser: @adviser
+    )
+    manuscript.pdf.attach(io: StringIO.new("not a pdf"), filename: "test.txt", content_type: "text/plain")
+    assert_not manuscript.valid?
+    assert_includes manuscript.errors[:pdf], "must be a PDF file"
+  end
+
+  test "manuscript pdf must not exceed 500 MB" do
+    manuscript = Manuscript.new(
+      title: "My Paper",
+      student: @student,
+      adviser: @adviser
+    )
+    manuscript.pdf.attach(@pdf)
+    manuscript.pdf.blob.update!(byte_size: 501.megabytes)
+    assert_not manuscript.valid?
+    assert_includes manuscript.errors[:pdf], "file size must be less than 500 MB"
+  end
+
+  test "manuscript pdf within 500 MB is valid" do
+    manuscript = Manuscript.new(
+      title: "My Paper",
+      student: @student,
+      adviser: @adviser
+    )
+    manuscript.pdf.attach(@pdf)
+    assert manuscript.pdf.blob.byte_size <= 500.megabytes,
+      "Expected @pdf fixture to be within 500 MB"
+    assert manuscript.valid?
+  end
+
   test "cover_img is not attached when pdf has no pages" do
     manuscript = Manuscript.create!(
       title: "No Pages PDF Paper",

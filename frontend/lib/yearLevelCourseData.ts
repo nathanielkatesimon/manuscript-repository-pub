@@ -2,8 +2,8 @@
  * Data definitions for year levels and courses used in the manuscript repository.
  *
  * Education is split into two tracks:
- *   - Senior High School (SHS): Grade 11 and Grade 12, with Academic and TVL strands.
- *   - College: 1st Year to 4th Year for Bachelor's programs;
+ *   - Senior High School (SHS): Grade 11 and Grade 12, with Academic Strands and Tech-Pro strands.
+ *   - College: 1st Year to 4th Year for Bachelor's Degree programs;
  *              1st Year and 2nd Year for Diploma programs.
  */
 
@@ -20,7 +20,7 @@ export interface Course {
   id: string;
   label: string;
   educationLevel: EducationLevel;
-  /** SHS courses carry a track label (Academic or TVL). */
+  /** SHS courses carry a track label (Academic Strands or Tech-Pro). */
   track?: string;
   /** College courses specify whether they are a Bachelor's or Diploma program. */
   programType?: CollegeProgramType;
@@ -51,108 +51,90 @@ export const ALL_YEAR_LEVELS: YearLevel[] = [
 // Courses
 // ---------------------------------------------------------------------------
 
-/** Senior High School — Academic Track strands */
+/** Senior High School — Academic Strands */
 export const ACADEMIC_TRACK_COURSES: Course[] = [
   {
+    id: "be",
+    label: "Business & Entrepreneurship (BE)",
+    educationLevel: "senior_high",
+    track: "Academic Strands",
+  },
+  {
     id: "stem",
-    label: "STEM (Science, Technology, Engineering, and Mathematics)",
+    label: "Science, Technology, Engineering & Mathematics (STEM)",
     educationLevel: "senior_high",
-    track: "Academic",
+    track: "Academic Strands",
   },
   {
-    id: "abm",
-    label: "ABM (Accountancy, Business and Management)",
+    id: "assh",
+    label: "Arts, Social Science & Humanities (ASSH)",
     educationLevel: "senior_high",
-    track: "Academic",
-  },
-  {
-    id: "humss",
-    label: "HUMSS (Humanities and Social Sciences)",
-    educationLevel: "senior_high",
-    track: "Academic",
-  },
-  {
-    id: "gas",
-    label: "GAS (General Academic Strand)",
-    educationLevel: "senior_high",
-    track: "Academic",
+    track: "Academic Strands",
   },
 ];
 
-/** Senior High School — TVL (Technical-Vocational-Livelihood) Track strands */
-export const TVL_TRACK_COURSES: Course[] = [
+/** Senior High School — Tech-Pro strands */
+export const TECH_PRO_TRACK_COURSES: Course[] = [
   {
-    id: "tvl_ict",
-    label: "TVL — Information and Communications Technology (ICT)",
+    id: "ict",
+    label: "Information & Communication Technology (ICT)",
     educationLevel: "senior_high",
-    track: "TVL",
+    track: "Tech-Pro",
   },
   {
-    id: "tvl_he",
-    label: "TVL — Home Economics (HE)",
+    id: "fcs",
+    label: "Family & Consumer Science (FCS)",
     educationLevel: "senior_high",
-    track: "TVL",
-  },
-  {
-    id: "tvl_ia",
-    label: "TVL — Industrial Arts (IA)",
-    educationLevel: "senior_high",
-    track: "TVL",
-  },
-  {
-    id: "tvl_afa",
-    label: "TVL — Agri-Fishery Arts (AFA)",
-    educationLevel: "senior_high",
-    track: "TVL",
+    track: "Tech-Pro",
   },
 ];
 
 export const SENIOR_HIGH_COURSES: Course[] = [
   ...ACADEMIC_TRACK_COURSES,
-  ...TVL_TRACK_COURSES,
+  ...TECH_PRO_TRACK_COURSES,
 ];
 
-/** College — Bachelor's degree programs (up to 4 years) */
+/** College — Bachelor's Degree programs (up to 4 years) */
 export const BACHELORS_COURSES: Course[] = [
   {
-    id: "bscs",
-    label: "BS Computer Science",
-    educationLevel: "college",
-    programType: "bachelors",
-  },
-  {
     id: "bsit",
-    label: "BS Information Technology",
-    educationLevel: "college",
-    programType: "bachelors",
-  },
-  {
-    id: "bsed",
-    label: "BS Education",
+    label: "Bachelor of Science in Information Technology (BSIT)",
     educationLevel: "college",
     programType: "bachelors",
   },
   {
     id: "bsba",
-    label: "BS Business Administration",
+    label: "Bachelor of Science in Business Administration (BSBA)",
     educationLevel: "college",
     programType: "bachelors",
   },
   {
-    id: "bsn",
-    label: "BS Nursing",
+    id: "bshm",
+    label: "Bachelor of Science in Hospitality Management (BSHM)",
     educationLevel: "college",
     programType: "bachelors",
   },
   {
-    id: "bsece",
-    label: "BS Electronics and Communications Engineering",
+    id: "bscrim",
+    label: "Bachelor of Science in Criminology (BSCrim)",
     educationLevel: "college",
     programType: "bachelors",
   },
   {
-    id: "bsce",
-    label: "BS Civil Engineering",
+    id: "bsism",
+    label: "Bachelor of Science in Industrial Security Management (BSISM)",
+    educationLevel: "college",
+    programType: "bachelors",
+  },
+  {
+    id: "bsentrep",
+    label: "Bachelor of Science in Entrepreneurship (BSEntrep)",
+    educationLevel: "college",
+    programType: "bachelors",
+  },
+  {
+    id: "bstm",
+    label: "Bachelor of Science in Tourism Management (BSTM)",
     educationLevel: "college",
     programType: "bachelors",
   },
@@ -161,20 +143,26 @@ export const BACHELORS_COURSES: Course[] = [
 /** College — Diploma programs (2 years, available in 1st and 2nd Year only) */
 export const DIPLOMA_COURSES: Course[] = [
   {
-    id: "dip_ict",
-    label: "Diploma in Information and Communications Technology",
+    id: "wadt",
+    label: "Web Application Development Technology (WADT)",
     educationLevel: "college",
     programType: "diploma",
   },
   {
-    id: "dip_ba",
-    label: "Diploma in Business Administration",
+    id: "oat",
+    label: "Office Administration Technology (OAT)",
     educationLevel: "college",
     programType: "diploma",
   },
   {
-    id: "dip_ht",
-    label: "Diploma in Hospitality and Tourism",
+    id: "omt",
+    label: "Office Management Technology (OMT)",
+    educationLevel: "college",
+    programType: "diploma",
+  },
+  {
+    id: "ht",
+    label: "Hospitality Technology (HT)",
     educationLevel: "college",
     programType: "diploma",
   },

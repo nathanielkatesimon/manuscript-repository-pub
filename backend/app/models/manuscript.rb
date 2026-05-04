@@ -11,10 +11,13 @@ class Manuscript < ApplicationRecord
 
   enum :status, { pending: "pending", approve: "approve", revision: "revision", rejected: "rejected" }
 
+  MAX_PDF_SIZE = 500.megabytes
+
   validates :title, presence: true
   validates :status, presence: true
   validate :pdf_must_be_attached, on: :create
   validate :pdf_must_be_a_pdf, if: -> { pdf.attached? }
+  validate :pdf_size_must_be_within_limit, if: -> { pdf.attached? }
 
   after_create_commit :generate_cover_img
 
@@ -58,6 +61,12 @@ class Manuscript < ApplicationRecord
   def pdf_must_be_a_pdf
     unless pdf.content_type.in?(%w[application/pdf])
       errors.add(:pdf, "must be a PDF file")
+    end
+  end
+
+  def pdf_size_must_be_within_limit
+    if pdf.blob.byte_size > MAX_PDF_SIZE
+      errors.add(:pdf, "file size must be less than 500 MB")
     end
   end
 end

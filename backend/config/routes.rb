@@ -30,10 +30,20 @@ Rails.application.routes.draw do
         resource :session, only: :create
         resource :profile, only: %i[show update]
         resource :dashboard, only: :show
+        resource :report, only: :show
+        resource :storage, only: :show
         resources :download_requests, only: %i[index show update]
         resources :categories
-        resources :advisers, only: %i[create update destroy]
-        resources :students, only: %i[index show create update destroy]
+        resources :advisers, only: %i[create update destroy] do
+          collection do
+            get :export
+          end
+        end
+        resources :students, only: %i[index show create update destroy] do
+          collection do
+            get :export
+          end
+        end
         resources :manuscripts, only: %i[index show]
       end
 

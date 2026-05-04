@@ -44,6 +44,7 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Student | null>(null);
@@ -71,6 +72,32 @@ export default function StudentsPage() {
   useEffect(() => {
     fetchStudents();
   }, [fetchStudents]);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/admins/students/export`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        await swal.error("Export Failed", "Could not generate the Excel file.");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `students_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      await swal.connectionError();
+    } finally {
+      setExporting(false);
+    }
+  }
 
   function openCreate() {
     setEditTarget(null);
@@ -186,12 +213,26 @@ export default function StudentsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Students</h1>
           <p className="mt-1 text-sm text-gray-500">Manage student accounts.</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="rounded-md bg-primary px-5 py-2 text-sm font-bold text-white hover:opacity-90 hover:cursor-pointer"
-        >
-          + Add Student
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 rounded-md bg-white px-5 py-2 text-sm font-bold text-green-700 hover:bg-green-50 hover:cursor-pointer disabled:opacity-40"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            {exporting ? "Exporting…" : "Export to Excel"}
+          </button>
+          <button
+            onClick={openCreate}
+            className="rounded-md bg-primary px-5 py-2 text-sm font-bold text-white hover:opacity-90 hover:cursor-pointer"
+          >
+            + Add Student
+          </button>
+        </div>
       </div>
 
       {/* Search bar */}
